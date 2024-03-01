@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChatGPT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #banner {
+            background-color: #007BFF;
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        #chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            background-color: #f5f5f5;
+            margin: 20px;
+        }
+
+        #chatbox {
+            width: 100%;
+            max-width: 600px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .user-message {
+            text-align: right;
+            color: #3d3d3d;
+            display: flex;
+            align-items: center;
+            margin: 10px;
+        }
+
+        #sendButton {
+            width: 70px;
+            height: 40px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 20px;
+            font-size: 18px;
+        }
+
+        .user-logo {
+            width: 30px;
+            height: 30px;
+            margin-left: 10px;
+        }
+
+        .bot-message {
+            text-align: left;
+            color: #3d3d3d;
+            display: flex;
+            align-items: flex-end;
+            margin: 10px;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            word-wrap: break-word;
+            white-space: pre-line;
+        }
+
+        .message.bot-message {
+            background-color: #f0f0f0;
+        }
+
+        .bot-reply {
+            display: flex;
+            align-items: center;
+        }
+
+        .chatbot-logo {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        #userLogo {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        #questionTypeBox {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            border-radius: 20px;
+        }
+
+        .user-logo {
+            width: 30px;
+            height: 30px;
+            margin-left: 10px;
+        }
+
+        #inputContainer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            width: 100%;
+            background-color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="banner">
+        <h1>CHATGPT WEB</h1>
+    </div>
+    <div id="chat-container">
+        <div id="chatbox"></div>
+        <div id="inputContainer">
+            <img id="userLogo" src="http://telegra.ph/file/be3864b1ac58b1231b6d2.jpg" alt="User Logo">
+            <input type="text" id="questionTypeBox" placeholder="Type your question...">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const questionTypeBox = document.getElementById('questionTypeBox');
+        const sendButton = document.getElementById('sendButton');
+//Made By NEPCODER @DEVSNP
+        sendButton.addEventListener('click', sendMessage);
+        questionTypeBox.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+ //Made By NEPCODER @DEVSNP
+        function addMessage(message, isUser = false) {
+            const messageElement = document.createElement('div');
+            messageElement.className = isUser ? 'user-message message' : 'bot-message message';
+            if (isUser) {
+                const userLogo = document.createElement('img');
+                userLogo.className = 'user-logo';
+                userLogo.src = 'http://telegra.ph/file/be3864b1ac58b1231b6d2.jpg';
+                messageElement.appendChild(userLogo);
+            }
+            messageElement.textContent = message;
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+ //Made By NEPCODER @DEVSNP
+        async function fetchAnswerFromAPI(question) {
+            try {
+                const apiUrl = `https://chatgpt.apinepdev.workers.dev/?question=${encodeURIComponent(question)}`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const answer = data.answer;
+
+ //Made By NEPCODER @DEVSNP
+                const loadingMessage = chatbox.querySelector('.bot-message.message:last-child');
+                if (loadingMessage) {
+                    loadingMessage.textContent = `Bot: ${answer}`;
+                } else {
+                    const botMessage = document.createElement('div');
+                    botMessage.className = 'bot-message message';
+                    botMessage.textContent = `Bot: ${answer}`;
+                    chatbox.appendChild(botMessage);
+                }
+ //Made By NEPCODER @DEVSNP
+                chatbox.scrollTop = chatbox.scrollHeight;
+            } catch (error) {
+                addMessage("Oops! An error occurred while fetching the answer.");
+            }
+        }
+ //Made By NEPCODER @DEVSNP
+        async function sendMessage() {
+            const userMessage = questionTypeBox.value;
+            if (userMessage.trim() !== '') {
+                addMessage(`You: ${userMessage}`, true);
+
+         //Made By Nepcoder @DEVSNP 
+                const loadingMessage = document.createElement('div');
+                loadingMessage.className = 'bot-message message';
+                loadingMessage.textContent = "Bot: Answer is loading...";
+                chatbox.appendChild(loadingMessage);
+//Made By NEPCODER @DEVSNP
+                await fetchAnswerFromAPI(userMessage); // Wait for the answer
+            }
+            questionTypeBox.value = '';
+        }
+
+
+
+
+
+
+
+
+    </script>
+
+</body>
+</html>
